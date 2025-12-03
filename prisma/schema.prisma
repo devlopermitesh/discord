@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+/// User role within a server
+enum Role {
+  GUEST
+  ADMIN
+  MOD
+}
+
+/// Channel communication type
+enum Type {
+  TEXT
+  AUDIO
+  VIDEO
+}
+
+// ============================================================================
+// MODELS
+// ============================================================================
+
+/// User profile - represents authenticated users in the system
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  name      String
+  imageUrl  String?
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  servers  Server[]
+  members  Member[]
+  channels Channel[]
+
+  @@map("profiles")
+  @@index([userId])
+  @@index([email])
+}
+
+/// Server - represents a community/workspace
+model Server {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  imageUrl    String?
+  inviteCode  String   @unique
+  profileId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  profile  Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  members  Member[]
+  channels Channel[]
+
+  @@map("servers")
+  @@index([profileId])
+  @@index([inviteCode])
+}
+
+/// Member - represents a user's membership in a server
+model Member {
+  id        String   @id @default(cuid())
+  role      Role     @default(GUEST)
+  profileId String
+  serverId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  server  Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@map("members")
+  @@unique([profileId, serverId])
+  @@index([profileId])
+  @@index([serverId])
+}
+
+/// Channel - represents a communication channel within a server
+model Channel {
+  id        String   @id @default(cuid())
+  title     String
+  type      Type     @default(TEXT)
+  profileId String
+  serverId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  server  Server  @relation(fields: [serverId], references: [id], onDelete: Cascade)
+
+  @@map("channels")
+  @@index([profileId])
+  @@index([serverId])
+}
