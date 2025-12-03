@@ -24,10 +24,13 @@ type AsyncRouteHandler = (
 export const asyncHandler = (fn: AsyncRouteHandler) => {
   return async (
     req: NextRequest,
-    context?: { params: Record<string, string> }
+    context: { params: Promise<Record<string, string>> }
   ): Promise<NextResponse> => {
     try {
-      return (await fn(req, context)) as NextResponse
+      const resolvedContext = {
+        params: await context.params,
+      }
+      return (await fn(req, resolvedContext)) as NextResponse
     } catch (error) {
       console.error('Route handler error:', error)
 
