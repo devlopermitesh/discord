@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --fix",
     "lint-staged": "lint-staged",
     "format": "prettier --write **/*.{js,jsx,ts,tsx,json,css,md}",
+    "vercel-build": "prisma generate && next build",
     "prepare": "husky"
   },
   "lint-staged": {
