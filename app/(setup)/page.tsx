@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
-import { IntialProfile } from '../utils/initial-profile'
 import { redirect } from 'next/navigation'
 import InitialModal from '@/components/organisms/modals/IntialModal'
+import { IntialProfile } from '@/utils/initial-profile'
 
 const SetupPage = async () => {
   const Userprofile = await IntialProfile()

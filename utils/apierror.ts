@@ -64,3 +64,10 @@ export class InternalServerError extends ApiError {
     this.name = 'InternalServerError'
   }
 }
+
+export class RateLimitExceeded extends ApiError {
+  constructor(message: string = 'Too many requests, please try again later') {
+    super(message, 429)
+    this.name = 'RateLimitExceeded'
+  }
+}

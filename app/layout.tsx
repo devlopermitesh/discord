@@ -5,6 +5,7 @@ import { ClerkProvider } from '@clerk/nextjs'
 import { ThemeProvider } from '@/components/providers/theme-provider'
 import { cn } from '@/lib/utils'
 import ImageKitProvider from '@/components/providers/ImagekitProvider'
+import { Toaster } from '@/components/ui/sonner'
 const OpenSans = Open_Sans({
   subsets: ['latin'],
 })
@@ -30,6 +31,7 @@ export default function RootLayout({
               enableSystem={true}
               defaultTheme="dark"
             >
+              <Toaster />
               {children}
             </ThemeProvider>
           </body>

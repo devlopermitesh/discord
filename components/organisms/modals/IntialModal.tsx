@@ -19,14 +19,18 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { z } from 'zod'
-import { createServerSchema } from '@/components/schema/server-schema'
 import { Input } from '@/components/ui/input'
 import UploadserverImage from '@/components/atoms/upload-serverImage'
 import { Button } from '@/components/ui/button'
 import { useEffect, useState } from 'react'
+import { createServerSchema } from '@/schema/server-schema'
+import axios from 'axios'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 const InitialModal = () => {
   const [IsMounted, setIsMounted] = useState(false)
+  const router = useRouter()
   useEffect(() => {
     setIsMounted(true)
   }, [])
@@ -39,8 +43,32 @@ const InitialModal = () => {
     },
   })
 
-  function onSubmit(values: z.infer<typeof createServerSchema>) {
-    console.log(values)
+  async function onSubmit(values: z.infer<typeof createServerSchema>) {
+    try {
+      await axios.post('/api/servers', values)
+
+      // Success handling
+      form.reset()
+      router.refresh()
+      window.location.reload()
+
+      toast.success('Server created successfully!')
+    } catch (error: unknown) {
+      // Type guard for Axios errors
+      if (axios.isAxiosError(error)) {
+        const errorMessage =
+          error.response?.data?.error ||
+          error.response?.data?.message ||
+          error.message ||
+          'Something went wrong'
+
+        toast.error(errorMessage)
+      } else if (error instanceof Error) {
+        toast.error(error.message)
+      } else {
+        toast.error('Something went wrong')
+      }
+    }
   }
 
   if (!IsMounted) return null

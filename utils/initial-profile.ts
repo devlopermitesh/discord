@@ -1,3 +1,5 @@
+import { cacheSet } from '@/lib/cache'
+import { getProfileCached } from '@/lib/get-profile'
 import { prisma } from '@/lib/prisma'
 import { auth, currentUser } from '@clerk/nextjs/server'
 
@@ -8,12 +10,9 @@ export const IntialProfile = async () => {
   if (!user) {
     return redirectToSignIn()
   }
+
   //Profile Exits
-  const ProfileExits = await prisma.profile.findUnique({
-    where: {
-      userId: user.id,
-    },
-  })
+  const ProfileExits = await getProfileCached(user.id)
   if (!ProfileExits) {
     const newProfile = await prisma.profile.create({
       data: {
@@ -23,6 +22,20 @@ export const IntialProfile = async () => {
         imageUrl: user.imageUrl || '',
       },
     })
+    // Cache newly created profile
+    await cacheSet(
+      `profile:${user.id}`,
+      JSON.stringify({
+        id: newProfile.id,
+        userId: newProfile.userId,
+        name: newProfile.name,
+        email: newProfile.email,
+        imageUrl: newProfile.imageUrl,
+      }),
+      3600
+    )
+    //60 minutes
+
     return newProfile
   }
 
